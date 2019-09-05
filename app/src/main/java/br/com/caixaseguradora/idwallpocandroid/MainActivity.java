@@ -1,10 +1,12 @@
 package br.com.caixaseguradora.idwallpocandroid;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 
 import co.idwall.toolkit.IDwallToolkit;
 import co.idwall.toolkit.flow.core.Doc;
@@ -23,45 +25,73 @@ public class MainActivity extends AppCompatActivity {
         bindListeners();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        String token = "";
+        if (resultCode == RESULT_OK && requestCode == IDwallToolkit.IDWALL_REQUEST) {
+            if (data != null && data.getExtras() != null && data.getExtras().containsKey(IDwallToolkit.TOKEN)) {
+                token = data.getStringExtra(IDwallToolkit.TOKEN);
+                showToken(token);
+            } else {
+                showError();
+            }
+        }
+    }
+
+    private void showToken(String token) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setMessage(token)
+                .setTitle(R.string.dialog_title);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
+    private void showError() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder
+                .setMessage(R.string.token_error)
+                .setTitle(R.string.dialog_error);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     private void initIDWall() {
         IDwallToolkit.getInstance().init(this.getApplication(), AUTH_KEY);
     }
 
-    private void startFace(){
+    private void startFace() {
         IDwallToolkit.getInstance().startFlow(this, Flow.LIVENESS, Doc.CHOOSE);
     }
 
-    private void startDocument(){
+    private void startDocument() {
         IDwallToolkit.getInstance().startFlow(this, Flow.DOC, Doc.CHOOSE);
     }
 
-    private void startComplete(){
+    private void startComplete() {
         IDwallToolkit.getInstance().startFlow(this, Flow.COMPLETE, Doc.CHOOSE);
     }
+
     private void bindListeners() {
-        Button btnFace = findViewById(R.id.btnFace);
-        btnFace.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnFace).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startFace();
             }
         });
 
-        Button btnDocument = findViewById(R.id.btnDocument);
-        btnDocument.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnDocument).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startDocument();
             }
         });
 
-        Button btnComplete = findViewById(R.id.btnComplete);
-        btnComplete.setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.btnComplete).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 startComplete();
             }
         });
     }
-
 }
